@@ -1,0 +1,34 @@
+- name: Deploys VM based on cloud image
+  hosts: cluster_hosts
+  gather_facts: yes
+  become: yes
+  vars:
+    all_vms:
+      - { name: 'cplane1', cpus: '4', ram_mb: '16388', vm_size: '93.12G', pool_dir: '/ssd/images', vnet: 'vnet2', vm_mac: '52:54:00:16:96:36' }
+      - { name: 'cplane2', cpus: '4', ram_mb: '16388', vm_size: '93.12G', pool_dir: '/ssd/images', vnet: 'vnet3', vm_mac: '52:54:00:8d:30:4e' }
+      - { name: 'cplane3', cpus: '4', ram_mb: '16388', vm_size: '93.12G', pool_dir: '/ssd/images', vnet: 'vnet4', vm_mac: '52:54:00:8f:9d:78' }
+      - { name: 'worker1', cpus: '4', ram_mb: '16388', vm_size: '93.12G', pool_dir: '/ssd/images', vnet: 'vnet5', vm_mac: '52:54:00:d1:f2:c4' }
+      - { name: 'worker2', cpus: '4', ram_mb: '16388', vm_size: '93.12G', pool_dir: '/ssd/images', vnet: 'vnet6', vm_mac: '52:54:00:42:e4:10' }
+      - { name: 'infra1', cpus: '10', ram_mb: '24580', vm_size: '1.5T', pool_dir: '/hdd/images', vnet: 'vnet6', vm_mac: '52:54:00:4b:64:54' }
+      - { name: 'infra2', cpus: '10', ram_mb: '24580', vm_size: '1.5T', pool_dir: '/hdd/images', vnet: 'vnet7', vm_mac: '52:54:00:ab:ad:ec' }
+      - { name: 'infra3', cpus: '10', ram_mb: '24580', vm_size: '1.5T', pool_dir: '/hdd/images', vnet: 'vnet8', vm_mac: '52:54:00:d0:d1:c7' }
+
+    cleanup: no
+    vm_net: bridge0
+    ssh_pub_key: "/home/chad/.ssh/id_rsa.pub"
+
+  tasks:
+    - name: Role - Provision Nodes
+      include_role:
+        name: cluster_provision
+      vars:
+        pool_dir: "{{ item.pool_dir }}"
+        vm_name: "{{ item.name }}"
+        vm_vcpus: "{{ item.cpus }}"
+        vm_ram_mb: "{{ item.ram_mb }}"
+        vm_size: "{{ item.vm_size }}"
+        cleanup_tmp: "{{ cleanup }}"
+        ssh_key: "{{ ssh_pub_key }}"
+        mac_addr: "{{ item.vm_mac }}"  
+      loop: "{{ all_vms }}"
+

@@ -1,0 +1,24 @@
+- name: Deploys VM based on cloud image
+  hosts: cluster_hosts
+  gather_facts: yes
+  become: yes
+  vars:
+    vms:
+      - cplane1
+      - cplane2
+      - cplane3
+      - worker1
+      - worker2
+      - infra1
+      - infra2
+      - infra3
+    cleanup: no
+    net: default
+
+  tasks:
+    - name: Cluster Destroy Role
+      include_role:
+        name: cluster_destroy
+      vars:
+        vm_name: "{{ item }}"
+      loop: "{{ vms }}"

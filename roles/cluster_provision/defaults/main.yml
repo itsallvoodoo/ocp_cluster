@@ -1,0 +1,20 @@
+---
+# defaults file for cluster_provision
+ISOs: "/var/ISOs"
+base_image_name: rhcos-live.x86_64.qcow2
+base_image_name_iso: rhcos-live.x86_64.iso
+cdrom_image_name_iso: discovery_image_ocp.iso
+base_image_name_qcow2: rhcos-live.x86_64.qcow2
+base_image_url: https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/latest/{{ base_image_name_iso }}
+cdrom_image_url: https://api.openshift.com/api/assisted-images/images/db2b92de-5466-4150-a6a1-90960685db25?arch=x86_64&image_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NzcyMTcyMzQsInN1YiI6ImRiMmI5MmRlLTU0NjYtNDE1MC1hNmExLTkwOTYwNjg1ZGIyNSJ9.BYUTOY7ODOk0NJVOEsPWH5cMhEKAPv_upS7CFRTYmYs&type=full-iso&version=4.12
+base_image_sha: d5a6f0c90f8a8559401f3f7a6dd5fb722fa198eea69d2530eb27f9e1fe0c1a42
+libvirt_pool_dir: "/ssd/images/"
+libvirt_odf_pool_dir: "/hdd/images/"
+vm_template: rhcos-template.xml.j2
+vm_name: rhcos-live.x86_64
+vm_vcpus: 4
+vm_ram_mb: 16384
+vm_net: default
+vm_root_pass: test123
+cleanup_tmp: no
+ssh_key: /home/chad/.ssh/id_rsa.pub

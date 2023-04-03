@@ -1,0 +1,64 @@
+---
+# tasks file for cluster_provision
+- name: ----- Provisioning Node -----
+  ansible.builtin.debug:
+    msg: Starting deployment of {{ vm_name }} virtual machine
+
+- name: Ensure requirements in place
+  package:
+    name:
+      - libguestfs-tools
+      - guestfs-tools
+      - qemu-kvm
+      - python3-libvirt
+    state: present
+  become: yes
+
+- name: Get VMs list
+  community.libvirt.virt:
+    command: list_vms
+  register: existing_vms
+  changed_when: no
+
+- name: Create VM if not exists
+  block:
+
+  - name: Download cdrom image
+    get_url:
+      url: "{{ cdrom_image_url }}"
+      dest: "{{ ISOs }}/{{ cdrom_image_name_iso }}"
+      mode: '0777'
+
+  - name: Move cdrom image to pool
+    ansible.builtin.copy:
+      src: "{{ ISOs }}/{{ cdrom_image_name_iso }}"
+      dest: "{{ pool_dir }}/{{ cdrom_image_name_iso }}"
+      remote_src: yes
+
+  - name: Create blank hard drive for node backing image
+    ansible.builtin.command: /usr/bin/qemu-img create /{{ pool_dir }}/{{ vm_name }}.qcow2 {{ vm_size }}
+ 
+  - name: Format blank image as ext4
+    ansible.builtin.command: mkfs.ext4 -F /{{ pool_dir }}/{{ vm_name }}.qcow2
+
+  - name: Define vm
+    community.libvirt.virt:
+      command: define
+      xml: "{{ lookup('template', 'rhcos-discovery-template.xml.j2') }}"
+
+  when: "vm_name not in existing_vms.list_vms"
+
+- name: Ensure VM is started
+  community.libvirt.virt:
+    name: "{{ vm_name }}"
+    state: running
+  register: vm_start_results
+  until: "vm_start_results is success"
+  retries: 15
+  delay: 2
+
+- name: Ensure temporary file is deleted
+  file:
+    path: "/tmp/{{ base_image_name }}"
+    state: absent
+  when: cleanup_tmp | bool
